@@ -15,30 +15,41 @@ def make_grid(window, batch, grid_size=50) -> None:
     
 
 class Win(pg.window.Window):
+    cell_size = 50
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.batch = pg.graphics.Batch()
         self.ui = UI(self)
-        array_size = make_grid(self, self.batch)
+        array_size = make_grid(self, self.batch, self.cell_size)
         self.map = Map_gen(array_size)
         self.ui.array = self.map.array
+        self.start = False
 
+        pg.clock.schedule(self.update)
 
-        pg.clock.schedule_interval(self.update, 1)
+    def on_key_press(self, symbol, modifiers):
+        if symbol == pg.window.key.S:
+            self.start = True
 
     def update(self, dt):
-        self.ui.array = self.map.update()
+        if self.start:
+            self.ui.array = self.map.update()
+ 
+
 
     def on_draw(self):
         self.clear()
         self.batch.draw()
+        for j, y in enumerate(reversed(self.ui.array)):
+            for i, c in enumerate(y):
+                if c.image:
+                    c.image['image'].blit(i*self.cell_size, j*self.cell_size)
 
-
-        self.ui.render()
+        #self.ui.render()
 
 
 
 
 if __name__ == '__main__':
-    Win(700, 700)
+    Win(500, 500)
     pg.app.run()
