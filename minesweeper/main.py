@@ -60,9 +60,11 @@ def create_mine_field(rows, cols, mines):
 
 
 class Win(pg.window.Window):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.batch = pg.graphics.Batch()
+        self.size = int(self.width / ROWS)
         self.field = create_mine_field(ROWS, COLS, MINES)
         self.cover_field = [[0  for _ in range(COLS)] for _ in range(ROWS)]
         self._initialize_field()
@@ -70,29 +72,33 @@ class Win(pg.window.Window):
             print(line)
 
     def _initialize_field(self):
-        size = int(self.width / ROWS)
+        
         for i, row in enumerate(reversed(self.field)):
-            y = size * i
+            y = self.size * i
             for j, value in enumerate(row):
-                x = j * size
+                x = j * self.size
+
+                if not self.cover_field[i][j]:
+                    value = 0
+
                 background = pg.graphics.OrderedGroup(0)
                 foreground = pg.graphics.OrderedGroup(1)
                 
                 color = (0, 0, 0) if value != -1 else (255, 0, 0)
                 self.batch.add(4, pg.gl.GL_QUADS, background, ('v2f', (x, y, 
-                                                                 x + size, y, 
-                                                                 x + size, y + size,
-                                                                 x, y + size)), ('c3B', color*4))
+                                                                 x + self.size, y, 
+                                                                 x + self.size, y + self.size,
+                                                                 x, y + self.size)), ('c3B', color*4))
                 if color[0] == 0:                                                
                     self.batch.add(4, pg.gl.GL_QUADS, background, ('v2f', (x + 2, y + 2, 
-                                                                x + size - 2, y + 2, 
-                                                                x + size - 2, y + size - 2, 
-                                                                x + 2, y + size - 2)), ('c3B', (155, 155, 155)*4))
+                                                                x + self.size - 2, y + 2, 
+                                                                x + self.size - 2, y + self.size - 2, 
+                                                                x + 2, y + self.size - 2)), ('c3B', (155, 155, 155)*4))
                 
                 if value in [0,-1]: continue
                 text = pg.text.Label(str(value), font_name=NUM_FONT, font_size=20, batch=self.batch, color=NUM_COLORS[value], group=foreground)
-                text.x = x + size//2
-                text.y = y + size//2
+                text.x = x + self.size//2
+                text.y = y + self.size//2
                 text.anchor_x = 'center'
                 text.anchor_y = 'center'
             
@@ -107,7 +113,7 @@ class Win(pg.window.Window):
         
 
     def on_mouse_press(self, x, y, button, modifiers):
-        print(x, y)
+        self.cover_field[y//self.size][x//self.size] == 1
 
 if __name__ == '__main__':
     Win(700, 700, 'minesweeper')
