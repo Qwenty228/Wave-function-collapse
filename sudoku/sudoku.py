@@ -10,15 +10,38 @@ board = [[5, 3, 0, 0, 7, 0, 0, 0, 0],
          [0, 6, 0, 0, 0, 0, 2, 8 ,0],
          [0, 0, 0 ,4, 1 ,9, 0, 0, 5],
          [0, 0, 0, 0, 8, 0, 0, 7, 9]]
+# board = [[0 for _ in range(9)] for _ in range(9)]
+
+# board = [[1, 0, 0, 0, 0, 0, 0, 0, 0],
+#          [0, 0, 0, 1, 0, 0 ,0 ,0 ,0],
+#          [0, 0, 0, 0, 0, 0, 1, 0, 0],
+#          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+#          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+#          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+#          [0, 0, 0, 0, 0, 0, 0, 0 ,0],
+#          [0, 0, 0 ,0, 0 ,0, 0, 0, 0],
+#          [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+# board = [[4, 9, 0, 0, 0, 0, 0, 0, 0],
+#          [0, 0, 0, 0, 4, 0 ,3 ,0 ,6],
+#          [7, 5, 0, 0, 9, 0, 1, 0, 0],
+#          [9, 0, 2, 0, 0, 0, 0, 0, 5],
+#          [0, 0, 0, 4, 0, 0, 0, 6, 0],
+#          [0, 7, 0, 0, 0, 1, 0, 0, 0],
+#          [5, 0, 0, 9, 8, 0, 6, 0 ,0],
+#          [0, 4, 9 ,0, 0 ,7, 0, 0, 0],
+#          [0, 2, 0, 0, 0, 3, 5, 0, 0]]
 
 def entropy_check(board):
-    lowest_ent = 9
+    lowest_ent = 10
     n_lowest_pos = [0, 0]
     n_poss = []
-
+    entropy_board = []
     for y, col in enumerate(board):
+        entropy_col = []
         for x, number in enumerate(col):
-            if number != 0: continue
+            if number != 0: 
+                entropy_col.append('C')
+                continue
             horizontal = board[y]
             vertical = list(zip(*board))[x]
             sections = []
@@ -28,14 +51,21 @@ def entropy_check(board):
 
             possibilities = [i for i in [n for n in range(1, 10)] if i not in set(horizontal + list(vertical) + sections)]
             entropy = len(possibilities)
+            entropy_col.append(entropy)
             if entropy < lowest_ent:
                 lowest_ent = entropy
                 n_lowest_pos = [y, x]
                 n_poss = possibilities
+            elif entropy == lowest_ent:
+                n_lowest_pos, n_poss = random.choice([[n_lowest_pos, n_poss], [[y, x], possibilities]])
+              
+
+
+        entropy_board.append(entropy_col)
 
     # print(n_lowest_pos, n_poss)
     board[n_lowest_pos[0]][n_lowest_pos[1]] = random.choice(n_poss)
-    return board, n_lowest_pos
+    return board, n_lowest_pos, entropy_board
        
 
 def display(board):
@@ -55,7 +85,7 @@ if __name__ == "__main__":
 
     while True:
         try:
-            board, _ = entropy_check(board)
+            board, _, _ = entropy_check(board)
             display(board)
         except IndexError:
             print('done')
